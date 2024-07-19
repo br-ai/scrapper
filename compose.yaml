@@ -1,7 +1,7 @@
 services:
 
   api:
-    build: api/
+    build: ./api
     ports:
       - "8000:8000"
     depends_on:
@@ -9,10 +9,13 @@ services:
 
   mariadb:
     image: mariadb:10.6
+    ports:
+      - "3306:3306"
     environment:
       MARIADB_ROOT_PASSWORD: root
     volumes:
      - ./data/mariadb:/var/lib/mysql
+
 
   phpmyadmin:
     image: phpmyadmin
@@ -22,4 +25,5 @@ services:
       PMA_HOST: mariadb
     ports:
       - 8001:80
+
     
