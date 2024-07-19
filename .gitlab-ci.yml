@@ -1,0 +1,14 @@
+stages:
+  - lint
+
+pylint:
+  stage: lint
+  image: python:3.9-slim
+  before_script:
+    - pip install pylint
+  script:
+    - pylint api/ --disable=C0114,C0115,C0116
+  allow_failure: false
+  artifacts:
+    reports:
+      junit: pylint-reports.xml

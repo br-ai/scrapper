@@ -1,3 +1,6 @@
+"""
+main file for executing api functions and routes
+"""
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 import crud
@@ -15,7 +18,7 @@ app = FastAPI()
 #Dependency
 def get_db():
     db = SessionLocal()
-    try : 
+    try: 
         yield db
     finally:
         db.close()
