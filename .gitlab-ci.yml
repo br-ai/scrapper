@@ -9,6 +9,3 @@ pylint:
   script:
     - pylint api/ --disable=C0114,C0115,C0116
   allow_failure: false
-  artifacts:
-    reports:
-      junit: pylint-reports.xml
