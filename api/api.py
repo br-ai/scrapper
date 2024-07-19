@@ -1,14 +1,15 @@
 """
 main file for executing api functions and routes
 """
+# import http
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 import crud
 import models
 import schema
-import database
+# import database
 from database import SessionLocal, engine
-import http
+
 # from .database import SessionLocal, engine
 
 models.Base.metadata.create_all(bind=engine)
@@ -17,8 +18,11 @@ app = FastAPI()
 
 #Dependency
 def get_db():
+    """
+    Get the local session of database
+    """
     db = SessionLocal()
-    try: 
+    try:
         yield db
     finally:
         db.close()

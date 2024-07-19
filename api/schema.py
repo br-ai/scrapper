@@ -6,7 +6,7 @@ class WebsiteBase(BaseModel):
     is_analyze: bool
 
 class WebsiteCreate(WebsiteBase):
-    pass 
+    pass
 
 class Website(WebsiteBase):
     id : int

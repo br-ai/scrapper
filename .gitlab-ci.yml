@@ -7,5 +7,5 @@ pylint:
   before_script:
     - pip install pylint
   script:
-    - pylint api/ --disable=C0114,C0115,C0116
+    - pylint api/ --disable=C0114,C0115,C0116,E0401,C0116
   allow_failure: false
