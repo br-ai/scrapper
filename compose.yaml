@@ -16,7 +16,6 @@ services:
     volumes:
      - ./data/mariadb:/var/lib/mysql
 
-
   phpmyadmin:
     image: phpmyadmin
     depends_on:

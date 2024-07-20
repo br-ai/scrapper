@@ -12,11 +12,11 @@ def create_connection(host_name, user_name, user_password, db_name):
         )
         print("Connection to MariaDB successful")
     except Error as e:
-        print(f"The error '{e}' occurred")
+        raise Exception(e)
 
     return connection
 
-host = "127.0.0.1"
+host = "scrapper-mariadb-1"
 user = "root"
 password = "root"
 database = "scrapper"
