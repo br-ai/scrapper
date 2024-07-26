@@ -37,3 +37,7 @@ def get_website(id:int, db:Session=Depends(get_db)):
     if website is None:
         raise HTTPException(status_code=404, detail=f"website: '{website}' not found")
     return website
+
+@app.get("/unscrapped_websites/", response_model=list[schema.Website])
+def get_unscrapped_websites(skip:int=0, limit:int=0, db:Session=Depends(get_db)):
+    return crud.get_unscrapped_websites(db,skip=skip,limit=limit)
