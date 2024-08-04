@@ -10,7 +10,6 @@ services:
   analyzer:
     build: ./analyzer
     depends_on:
-      - mariadb
       - api
 
   mariadb:
