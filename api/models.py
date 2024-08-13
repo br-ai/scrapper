@@ -6,7 +6,7 @@ from database import Base
 class Website(Base):
     __tablename__ = "website"
     id = Column(Integer,primary_key=True, index=True)
-    domain = Column(String(255), index=True)
+    domain = Column(String(255), index=True, unique=True)
     ttfb = Column(Float, nullable=True)
     is_analyze = Column(Boolean, default=False)
     cms = Column(String(255), index=True, nullable=True)

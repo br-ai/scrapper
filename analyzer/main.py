@@ -6,21 +6,26 @@ from analyzer import Analyzer
 
 def main():
     analyzer = Analyzer("http://api:8000/")
-    unscrapped_websites = analyzer.get_unscrapped_website()
-    print(f"Nombre de domaines à analyser : {len(unscrapped_websites)}")
-    
-    for website in unscrapped_websites:
-        domain = website['domain']
-        print(f"En cours d'analyse de : {domain}")
-        time.sleep(4)
-        result = analyzer.analyze_website(domain)
-        print(result, flush=True)
-        # Attente de 7 secondes entre chaque analyse
-        print("Pause de 7 secondes avant la prochaine analyse...")
-        time.sleep(7)
-        print("-----------------------------", flush=True)
-    
-    print("Analyse terminée")
+    while True:
+        print("0: ➕ Add a new domain \n1: 🛠️  Start auto-scraping \n2: 🌐 scrap a website now\n")
+        print("---------------------------------------\n")
+        choice = input("Enter the number of your choice (or 'q' to quit):  ").strip()
 
-if __name__ == "__main__":
+        if choice == '0':
+            analyzer.add_domain()
+
+        elif choice == '1':
+            analyzer.auto_scrapping()
+
+        elif choice == '2':
+            pass
+
+        elif choice.lower() == 'q':
+            print("Exiting the program.")
+            break
+        else:
+            print("Invalid choice. Please enter a valid number or 'q' to quit.")
+
+if __name__ == '__main__':
     main()
+

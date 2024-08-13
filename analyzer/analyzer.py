@@ -2,11 +2,49 @@ import requests
 from bs4 import BeautifulSoup
 import time
 import socket
+import json
 
 
 class Analyzer:
     def __init__(self, url_base_api):
         self.url_base_api = url_base_api
+
+    def add_domain(self):
+        while True:
+            try:
+                domain = str(input("Enter the name of domain (without http(s)): ")).strip()
+                if domain.startswith("http"):
+                    print("Invalid domain name, please remove http(s) and try again.")
+                    continue
+                if not "." in domain:
+                    print("Invalid domain name, please add an extension (.com, .fr etc...).")
+                    continue
+
+                data = {"domain": domain,
+                        "ttfb": None,
+                        "is_analyze": False,
+                        "cms": None,
+                        "techno_used": None,
+                        "web_hoster": None,
+                        "country_of_web_hoster": None
+                        }
+                headers = {'Content-type': 'application/json'}
+                
+                response = requests.post(self.url_base_api + "websites/", data=json.dumps(data), headers=headers)
+                
+                if response.status_code == 200:
+                    print(f"Domain: {domain} was successfully added!")
+                    time.sleep(5)
+                    break
+                else:
+                    print(f"Failed to add domain: {domain}. Status code: {response.status_code}")
+                    print(f"The error message is : {response.reason}, maybe the url already exists or connections issues")
+                    time.sleep(5)
+                    break
+
+            except Exception as e:
+                print(f"An error occurred: {e}")
+                break
     
     def get_unscrapped_website(self):
         try:
@@ -183,3 +221,18 @@ class Analyzer:
             return 'Flask'
 
         return 'Unknown'
+
+    def auto_scrapping(self):
+        unscrapped_websites = self.get_unscrapped_website()
+        print(f"Nombre de domaines a scrapper : {len(unscrapped_websites)}")
+        for website in unscrapped_websites:
+            domain = website['domain']
+            print(f"En cours d'analyse de : {domain}")
+            time.sleep(4)
+            result = self.analyze_website(domain)
+            print(result, flush=True)
+            print("Pause de 4 secondes avant la prochaine analyse...")
+            time.sleep(4)
+            print("-----------------------------", flush=True)
+    
+        print("Analyse terminée")
