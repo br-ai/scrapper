@@ -34,7 +34,7 @@ class Analyzer:
                 
                 if response.status_code == 200:
                     print(f"Domain: {domain} was successfully added!")
-                    time.sleep(5)
+                    time.sleep(2)
                     break
                 else:
                     print(f"Failed to add domain: {domain}. Status code: {response.status_code}")
@@ -62,8 +62,9 @@ class Analyzer:
         return {
             'domain': domain,
             'ttfb': ttfb,
+            'is_analyze': True,
             'cms': cms,
-            'technologies': technologies,
+            'techno_used': json.dumps(technologies),
             'web_hoster': web_hoster,
             'country_of_web_hoster': country_of_web_hoster,
         }
@@ -231,8 +232,32 @@ class Analyzer:
             time.sleep(4)
             result = self.analyze_website(domain)
             print(result, flush=True)
+            time.sleep(4)
+            self.update_to_db(result)
             print("Pause de 4 secondes avant la prochaine analyse...")
             time.sleep(4)
             print("-----------------------------", flush=True)
     
         print("Analyse terminée")
+
+    def update_to_db(self, result):
+        try:
+            if result.get('ttfb') is None:
+                print("Rien a ajouter pour ce domaine")
+                return
+
+            url = self.url_base_api + f"websites/{result.get('domain')}/"
+
+            headers = {'Content-Type': 'application/json'}
+            response = requests.patch(url, data=json.dumps(result), headers=headers)
+            print("Ajout des informations scrappees dans la bd")
+            time.sleep(4)
+            if response.status_code == 200:
+                print("Informations ajoutees pour ce domaine")
+            else:
+                print(f"Erreur lors de la mise a jour des informations dans la bd pour le domaine {result['domain']}. Status code: {response.status_code}")
+            time.sleep(2)
+        except Exception as e:
+            print(f"An error occurred: {e}")
+        
+

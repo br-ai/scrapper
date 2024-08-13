@@ -10,6 +10,14 @@ class WebsiteBase(BaseModel):
     web_hoster: Optional[str] = None
     country_of_web_hoster: Optional[str] = None
 
+class WebsiteUpdate(BaseModel):
+    ttfb: Optional[float] = None
+    is_analyze: Optional[bool] = True
+    cms: Optional[str] = None
+    techno_used: Optional[str] = None
+    web_hoster: Optional[str] = None
+    country_of_web_hoster: Optional[str] = None
+
 class WebsiteCreate(WebsiteBase):
     pass
 
