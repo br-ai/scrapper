@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import time
 import socket
 import json
+from urllib.parse import urljoin, urlparse
 
 
 class Analyzer:
@@ -12,9 +13,9 @@ class Analyzer:
     def add_domain(self):
         while True:
             try:
-                domain = str(input("Enter the name of domain (without http(s)): ")).strip()
-                if domain.startswith("http"):
-                    print("Invalid domain name, please remove http(s) and try again.")
+                domain = str(input("Enter the name of domain (start with https) : ")).strip()
+                if not domain.startswith("https://"):
+                    print("Invalid domain name, please add https and try again.")
                     continue
                 if not "." in domain:
                     print("Invalid domain name, please add an extension (.com, .fr etc...).")
@@ -72,7 +73,7 @@ class Analyzer:
     def get_ttfb(self, domain):
         start = time.time()
         try:
-            response = requests.get(f"http://{domain}")
+            response = requests.get(f"{domain}")
             ttfb = time.time() - start
         except requests.RequestException:
             ttfb = None
@@ -80,17 +81,18 @@ class Analyzer:
     
     def get_web_hoster_info(self, domain):
         try:
-            ip_address = socket.gethostbyname(domain)
+            slice_domain = domain[8:]
+            ip_address = socket.gethostbyname(slice_domain)
             response = requests.get(f"http://ipinfo.io/{ip_address}")
             data = response.json()
             return data.get('org', 'Unknown'), data.get('country', 'Unknown')
         except (requests.RequestException, socket.gaierror) as e:
-            print(f"An error occurred while getting hoster info for {domain}: {e}")
+            print(f"An error occurred while getting hoster info for {slice_domain}: {e}")
             return None, None
 
     def get_cms(self, domain):
         try:
-            response = requests.get(f"http://{domain}", timeout=10)
+            response = requests.get(f"{domain}", timeout=10)
             response.raise_for_status()
             soup = BeautifulSoup(response.text, 'html.parser')
             
@@ -153,7 +155,7 @@ class Analyzer:
 
     def get_technologies(self, domain):
         try:
-            response = requests.get(f"http://{domain}", timeout=10)
+            response = requests.get(f"{domain}", timeout=10)
             response.raise_for_status()
             html_text = response.text.lower()
 
@@ -234,30 +236,93 @@ class Analyzer:
             print(result, flush=True)
             time.sleep(4)
             self.update_to_db(result)
-            print("Pause de 4 secondes avant la prochaine analyse...")
+            print(f"Recherches des liens valides dans le domain {domain}")
+            self.get_all_links(domain)
+            print("")
+            print("prochaine analyse...")
             time.sleep(4)
             print("-----------------------------", flush=True)
     
         print("Analyse terminée")
+        self.auto_scrapping()
 
     def update_to_db(self, result):
         try:
             if result.get('ttfb') is None:
                 print("Rien a ajouter pour ce domaine")
                 return
-
-            url = self.url_base_api + f"websites/{result.get('domain')}/"
-
+            domain = result['domain']
+            
+            slice_domain = domain[8:]
+            url = self.url_base_api + f"websites/{result.get('domain')[8:]}/"
             headers = {'Content-Type': 'application/json'}
             response = requests.patch(url, data=json.dumps(result), headers=headers)
             print("Ajout des informations scrappees dans la bd")
             time.sleep(4)
             if response.status_code == 200:
                 print("Informations ajoutees pour ce domaine")
+                time.sleep(3)
             else:
                 print(f"Erreur lors de la mise a jour des informations dans la bd pour le domaine {result['domain']}. Status code: {response.status_code}")
             time.sleep(2)
         except Exception as e:
             print(f"An error occurred: {e}")
-        
 
+    def add_scrapped_domain(self, domain):
+        try:
+            data = {"domain": domain,
+                        "ttfb": None,
+                        "is_analyze": False,
+                        "cms": None,
+                        "techno_used": None,
+                        "web_hoster": None,
+                        "country_of_web_hoster": None
+                        }
+            
+            print("Ajout des domaines trouves dans la BD")
+            response = requests.post(self.url_base_api + "websites/", data=json.dumps(data), headers={'Content-Type': 'application/json'})
+            
+            if response.status_code == 200:
+                print(f"Domain: {domain} ajoute avec success")
+                time.sleep(4)
+            else:
+                print(f"Erreur lors de l ajout du domaine {domain}. Status code: {response.status_code}")
+        
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
+    def get_all_links(self, domain):
+        try:
+            response = requests.get(domain, timeout=10)
+            response.raise_for_status()
+            soup = BeautifulSoup(response.text, 'html.parser')
+            base_domain = urlparse(domain).netloc
+            links = set()
+
+            for a_tag in soup.find_all('a', href=True):
+                href = a_tag['href']
+                full_url = urljoin(domain, href)
+                link_domain = urlparse(full_url).netloc
+
+                if full_url.startswith('https://') and link_domain and link_domain != base_domain:
+                    links.add(f"https://{link_domain}")
+
+            valid_links = set()
+
+            for link_domain in links:
+                try:
+                    link_response = requests.head(link_domain, timeout=25)
+                    if link_response.status_code == 200:
+                        valid_links.add(link_domain)
+                        print("------------------")
+                        print(f"Nouveaux domaines trouves: {link_domain}")
+                        time.sleep(4)
+                        self.add_scrapped_domain(link_domain)
+
+                except requests.RequestException as e:
+                    print(f"Domaine inaccessible: {link_domain} - {e}")
+
+            print("")
+            print(f"Nombre de domaines trouves {len(valid_links)} depuis le domaine {domain}.")
+        except requests.RequestException as e:
+            print(f"An error occurred while scraping links from {domain}: {e}")

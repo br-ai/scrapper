@@ -13,7 +13,8 @@ def get_websites(db: Session, skip:int=0, limit:int=100):
     return db.query(models.Website).offset(skip).limit(limit).all()
 
 def get_website_by_domain(db: Session, domain: str):
-    return db.query(models.Website).filter(models.Website.domain == domain).first()
+    https_domain = "https://"+domain
+    return db.query(models.Website).filter(models.Website.domain == https_domain).first()
 
 def create_website(db: Session, website:schema.WebsiteCreate):
     db_website = models.Website(domain=website.domain, is_analyze=False)
