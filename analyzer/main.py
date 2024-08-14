@@ -18,7 +18,7 @@ def main():
             analyzer.auto_scrapping()
 
         elif choice == '2':
-            pass
+            analyzer.scrap()
 
         elif choice.lower() == 'q':
             print("Exiting the program.")

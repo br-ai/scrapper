@@ -225,6 +225,22 @@ class Analyzer:
 
         return 'Unknown'
 
+    def scrap(self):
+        try:
+            domain = str(input("Enter the name of domain to scrap (start with https) : ")).strip()
+            if not domain.startswith("https://"):
+                print("Invalid domain name, please add https and try again.")
+                return
+            self.add_scrapped_domain(domain)
+            print(f"En cours d analyse de {domain}")
+            result = self.analyze_website(domain)
+            print(result)
+            self.update_to_db(result)
+            self.get_all_links(domain)
+
+        except Exception as e:
+            print(f"An error occured {e}")
+
     def auto_scrapping(self):
         unscrapped_websites = self.get_unscrapped_website()
         print(f"Nombre de domaines a scrapper : {len(unscrapped_websites)}")
