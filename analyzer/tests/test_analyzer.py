@@ -1,7 +1,8 @@
 import pytest
-from analyzer import Analyzer
+from .analyzer import *
 from unittest.mock import patch, MagicMock
 import requests
+import json
 
 @pytest.fixture
 def analyzer():
